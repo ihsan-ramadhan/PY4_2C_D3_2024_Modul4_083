@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:logbook_app_083/helpers/log_helper.dart';
+import 'package:logbook_app_083/services/mongo_service.dart';
 import 'log_controller.dart';
 import 'models/log_model.dart';
 import '../onboarding/onboarding_view.dart';
@@ -12,7 +14,8 @@ class LogView extends StatefulWidget {
 }
 
 class _LogViewState extends State<LogView> {
-  final LogController _controller = LogController();
+  late LogController _controller;
+  bool _isLoading = false;
 
   // 1. Tambahkan Controller untuk menangkap input di dalam State
   final TextEditingController _titleController = TextEditingController();
@@ -262,6 +265,73 @@ class _LogViewState extends State<LogView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _controller = LogController();
+
+    // Memberikan kesempatan UI merender widget awal sebelum proses berat dimulai
+    Future.microtask(() => _initDatabase());
+  }
+
+  Future<void> _initDatabase() async {
+    setState(() => _isLoading = true);
+    try {
+      await LogHelper.writeLog(
+        "UI: Memulai inisialisasi database...",
+        source: "log_view.dart",
+      );
+
+      // Mencoba koneksi ke MongoDB Atlas (Cloud)
+      await LogHelper.writeLog(
+        "UI: Menghubungi MongoService.connect()...",
+        source: "log_view.dart",
+      );
+
+      // Mengaktifkan kembali koneksi dengan timeout 15 detik (lebih longgar untuk sinyal HP)
+      await MongoService().connect().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception(
+          "Koneksi Cloud Timeout. Periksa sinyal/IP Whitelist.",
+        ),
+      );
+
+      await LogHelper.writeLog(
+        "UI: Koneksi MongoService BERHASIL.",
+        source: "log_view.dart",
+      );
+
+      // Mengambil data log dari Cloud
+      await LogHelper.writeLog(
+        "UI: Memanggil controller.loadFromDisk()...",
+        source: "log_view.dart",
+      );
+
+      await _controller.loadFromDisk();
+
+      await LogHelper.writeLog(
+        "UI: Data berhasil dimuat ke Notifier.",
+        source: "log_view.dart",
+      );
+    } catch (e) {
+      await LogHelper.writeLog(
+        "UI: Error - $e",
+        source: "log_view.dart",
+        level: 1,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Masalah: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      // 2. INILAH FINALLY: // Apapun yang terjadi (Sukses/Gagal/Data Kosong), loading harus mati
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
@@ -349,49 +419,46 @@ class _LogViewState extends State<LogView> {
               valueListenable: _controller.filteredLogs,
               builder: (context, filteredLogs, child) {
                 final currentLogs = _controller.logsNotifier.value;
+                if (_isLoading) {
+                  return const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text("Menghubungkan ke MongoDB Atlas..."),
+                      ],
+                    ),
+                  );
+                }
 
+                // 2. Tampilan jika loading sudah selesai tapi data di Atlas kosong
                 if (filteredLogs.isEmpty) {
                   return Center(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8F0FE),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Image.asset(
-                            'assets/images/notfound.png',
-                            height: 100,
-                            errorBuilder: (c, e, s) => const Icon(
-                              Icons.note_alt_outlined,
-                              size: 60,
-                              color: Color(0xFF1565C0),
-                            ),
-                          ),
-                        ),
+                        const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
                         const SizedBox(height: 16),
                         const Text(
-                          "Belum ada catatan",
+                          "Belum ada catatan di Cloud.",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF455A64),
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "Tekan + untuk menambah catatan baru",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.blueGrey[400],
-                          ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: _showAddLogDialog,
+                          child: const Text("Buat Catatan Pertama"),
                         ),
                       ],
                     ),
                   );
                 }
+
+                // Jika data sudah masuk, tampilkan List seperti biasa
                 return ListView.builder(
                   padding: const EdgeInsets.only(top: 6, bottom: 80),
                   itemCount: filteredLogs.length,
@@ -525,7 +592,7 @@ class _LogViewState extends State<LogView> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            _formatDate(log.date),
+                                            _formatDate(log.date.toString()),
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: Colors.blueGrey[300],

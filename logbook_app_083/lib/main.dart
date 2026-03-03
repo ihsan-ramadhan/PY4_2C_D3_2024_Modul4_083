@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Sesuaikan path import dengan struktur folder baru
 import 'package:logbook_app_083/features/onboarding/onboarding_view.dart';
 import 'package:logbook_app_083/features/auth/login_view.dart';
+import 'package:logbook_app_083/services/mongo_service.dart';
 
-void main() {
+void main() async {
+  // Wajib untuk operasi asinkron sebelum runApp
+  WidgetsFlutterBinding.ensureInitialized();
+  // Load ENV
+  await dotenv.load(fileName: ".env");
+  await MongoService().connect();
   runApp(const MyApp());
 }
 
