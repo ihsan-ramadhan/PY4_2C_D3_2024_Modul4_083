@@ -16,6 +16,8 @@ class LogView extends StatefulWidget {
 class _LogViewState extends State<LogView> {
   late LogController _controller;
   bool _isLoading = false;
+  String? _errorMessage; 
+  bool _isOffline = false; 
 
   // 1. Tambahkan Controller untuk menangkap input di dalam State
   final TextEditingController _titleController = TextEditingController();
@@ -274,7 +276,11 @@ class _LogViewState extends State<LogView> {
   }
 
   Future<void> _initDatabase() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _isOffline = false;
+    });
     try {
       await LogHelper.writeLog(
         "UI: Memulai inisialisasi database...",
@@ -313,15 +319,26 @@ class _LogViewState extends State<LogView> {
         source: "log_view.dart",
       );
     } catch (e) {
+      final errorStr = e.toString();
+      final isNetworkError = errorStr.contains('Timeout') ||
+          errorStr.contains('SocketException') ||
+          errorStr.contains('Network') ||
+          errorStr.contains('connection') ||
+          errorStr.contains('Whitelist') ||
+          errorStr.contains('errno');
+
       await LogHelper.writeLog(
-        "UI: Error - $e",
+        "UI: Error - $errorStr",
         source: "log_view.dart",
         level: 1,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Masalah: $e"), backgroundColor: Colors.red),
-        );
+        setState(() {
+          _isOffline = isNetworkError;
+          _errorMessage = isNetworkError
+              ? "Tidak dapat terhubung ke MongoDB Atlas.\nPeriksa koneksi internet."
+              : "Terjadi kesalahan:\n$errorStr";
+        });
       }
     } finally {
       // 2. INILAH FINALLY: // Apapun yang terjadi (Sukses/Gagal/Data Kosong), loading harus mati
@@ -428,6 +445,78 @@ class _LogViewState extends State<LogView> {
                         SizedBox(height: 16),
                         Text("Menghubungkan ke MongoDB Atlas..."),
                       ],
+                    ),
+                  );
+                }
+
+                if (_errorMessage != null) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/no-internet.png',
+                            width: 120,
+                            height: 120,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _isOffline ? "Mode Offline" : "Koneksi Bermasalah",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF37474F),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.blueGrey[500],
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: const Text("Coba Lagi"),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF1565C0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              onPressed: _initDatabase,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              icon: const Icon(Icons.cloud_off_rounded, size: 18),
+                              label: const Text("Lanjut Offline"),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.blueGrey,
+                                side: BorderSide(color: Colors.blueGrey.shade200),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              onPressed: () {
+                                setState(() => _errorMessage = null);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
