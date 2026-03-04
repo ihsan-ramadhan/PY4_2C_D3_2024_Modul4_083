@@ -117,20 +117,19 @@ class _LoginViewState extends State<LoginView> {
       body: Stack(
         children: [
           Container(
-            height: size.height * 0.48,
+            height: size.height,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1565C0),
+                  Color(0xFF42A5F5),
+                  Color(0xFFADDFFC),
+                  Color(0xFFFFFFFF),
+                ],
+                stops: [0.0, 0.25, 0.5, 0.75],
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: size.height * 0.52,
-              color: const Color(0xFFF0F4FF),
             ),
           ),
           SafeArea(
