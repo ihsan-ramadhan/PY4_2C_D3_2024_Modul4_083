@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logbook_app_083/helpers/log_helper.dart';
 import 'package:logbook_app_083/services/mongo_service.dart';
 import 'log_controller.dart';
@@ -715,9 +716,8 @@ class _LogViewState extends State<LogView> {
                                             color: Colors.red[400],
                                             size: 18,
                                           ),
-                                        onPressed: () => _controller.removeLog(
-                                          originalIndex,
-                                        ),
+                                          onPressed: () => _controller
+                                              .removeLog(originalIndex),
                                           tooltip: "Hapus",
                                         ),
                                       ],
@@ -751,22 +751,22 @@ class _LogViewState extends State<LogView> {
   String _formatDate(String rawDate) {
     try {
       final dt = DateTime.parse(rawDate);
-      final months = [
-        '',
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mei',
-        'Jun',
-        'Jul',
-        'Agu',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Des',
-      ];
-      return "${dt.day} ${months[dt.month]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+
+      // Relative time: tampilkan "X menit/jam yang lalu"
+      if (diff.inSeconds < 60) {
+        return "Baru saja";
+      } else if (diff.inMinutes < 60) {
+        return "${diff.inMinutes} menit yang lalu";
+      } else if (diff.inHours < 24) {
+        return "${diff.inHours} jam yang lalu";
+      } else if (diff.inDays < 2) {
+        return "Kemarin, ${DateFormat('HH:mm').format(dt)}";
+      }
+
+      // Format absolut untuk lebih dari 2 hari: "25 Jan 2026, 14:30"
+      return DateFormat("d MMM yyyy, HH:mm", "id").format(dt);
     } catch (_) {
       return rawDate;
     }
