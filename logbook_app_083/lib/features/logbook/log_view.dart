@@ -66,83 +66,121 @@ class _LogViewState extends State<LogView> {
 
   void _showAddLogDialog() {
     _selectedCategory = "Pribadi";
+    _titleController.clear();
+    _contentController.clear();
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: const [
-              Icon(Icons.add_circle_outline_rounded, color: Color(0xFF1565C0)),
-              SizedBox(width: 8),
-              Text(
-                "Catatan Baru",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min, // Agar dialog tidak memenuhi layar
-            children: [
-              TextField(
-                controller: _titleController,
-                decoration: _fieldDecoration(
-                  "Judul catatan",
-                  icon: Icons.title_rounded,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _contentController,
-                maxLines: 3,
-                decoration: _fieldDecoration("Isi deskripsi"),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: _fieldDecoration(
-                  "Kategori",
-                  icon: Icons.label_outline_rounded,
-                ),
-                items: _categories
-                    .map(
-                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
-                    )
-                    .toList(),
-                onChanged: (val) =>
-                    setDialogState(() => _selectedCategory = val!),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
+        builder: (context, setDialogState) {
+          final catColor = _getCategoryColor(_selectedCategory);
+          final catIcon = _getCategoryIcon(_selectedCategory);
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            clipBehavior: Clip.hardEdge,
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // Agar dialog tidak memenuhi layar
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  color: catColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(catIcon, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "Catatan Baru",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              onPressed: () {
-                _controller.addLog(
-                  _titleController.text,
-                  _contentController.text,
-                  _selectedCategory,
-                );
-                _titleController.clear();
-                _contentController.clear();
-                Navigator.pop(context);
-                setState(() {});
-              },
-              child: const Text("Simpan"),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: _fieldDecoration(
+                          "Judul catatan",
+                          icon: Icons.title_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _contentController,
+                        maxLines: 3,
+                        decoration: _fieldDecoration("Isi deskripsi"),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        decoration: _fieldDecoration(
+                          "Kategori",
+                          icon: Icons.label_outline_rounded,
+                        ),
+                        items: _categories
+                            .map(
+                              (cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setDialogState(() => _selectedCategory = val!),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Batal"),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: catColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          _controller.addLog(
+                            _titleController.text,
+                            _contentController.text,
+                            _selectedCategory,
+                          );
+                          _titleController.clear();
+                          _contentController.clear();
+                          Navigator.pop(context);
+                          setState(() {});
+                        },
+                        child: const Text("Simpan"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -154,81 +192,116 @@ class _LogViewState extends State<LogView> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: const [
-              Icon(Icons.edit_outlined, color: Color(0xFF1565C0)),
-              SizedBox(width: 8),
-              Text(
-                "Edit Catatan",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _titleController,
-                decoration: _fieldDecoration(
-                  "Judul catatan",
-                  icon: Icons.title_rounded,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _contentController,
-                maxLines: 3,
-                decoration: _fieldDecoration("Isi deskripsi"),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: _fieldDecoration(
-                  "Kategori",
-                  icon: Icons.label_outline_rounded,
-                ),
-                items: _categories
-                    .map(
-                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
-                    )
-                    .toList(),
-                onChanged: (val) =>
-                    setDialogState(() => _selectedCategory = val!),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
+        builder: (context, setDialogState) {
+          final catColor = _getCategoryColor(_selectedCategory);
+          final catIcon = _getCategoryIcon(_selectedCategory);
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            clipBehavior: Clip.hardEdge,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  color: catColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(catIcon, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "Edit Catatan",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              onPressed: () {
-                _controller.updateLog(
-                  index,
-                  _titleController.text,
-                  _contentController.text,
-                  _selectedCategory,
-                );
-                _titleController.clear();
-                _contentController.clear();
-                Navigator.pop(context);
-                setState(() {});
-              },
-              child: const Text("Update"),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: _fieldDecoration(
+                          "Judul catatan",
+                          icon: Icons.title_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _contentController,
+                        maxLines: 3,
+                        decoration: _fieldDecoration("Isi deskripsi"),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        decoration: _fieldDecoration(
+                          "Kategori",
+                          icon: Icons.label_outline_rounded,
+                        ),
+                        items: _categories
+                            .map(
+                              (cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setDialogState(() => _selectedCategory = val!),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Batal"),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: catColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          _controller.updateLog(
+                            index,
+                            _titleController.text,
+                            _contentController.text,
+                            _selectedCategory,
+                          );
+                          _titleController.clear();
+                          _contentController.clear();
+                          Navigator.pop(context);
+                          setState(() {});
+                        },
+                        child: const Text("Update"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -321,7 +394,8 @@ class _LogViewState extends State<LogView> {
       );
     } catch (e) {
       final errorStr = e.toString();
-      final isNetworkError = errorStr.contains('Timeout') ||
+      final isNetworkError =
+          errorStr.contains('Timeout') ||
           errorStr.contains('SocketException') ||
           errorStr.contains('Network') ||
           errorStr.contains('connection') ||
@@ -395,7 +469,10 @@ class _LogViewState extends State<LogView> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0),
-          child: Container(height: 1, color: Colors.white.withValues(alpha: 0.1)),
+          child: Container(
+            height: 1,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
         ),
       ),
       body: Column(
@@ -492,7 +569,9 @@ class _LogViewState extends State<LogView> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
                               onPressed: _initDatabase,
                             ),
@@ -501,15 +580,22 @@ class _LogViewState extends State<LogView> {
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
-                              icon: const Icon(Icons.cloud_off_rounded, size: 18),
+                              icon: const Icon(
+                                Icons.cloud_off_rounded,
+                                size: 18,
+                              ),
                               label: const Text("Lanjut Offline"),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.blueGrey,
-                                side: BorderSide(color: Colors.blueGrey.shade200),
+                                side: BorderSide(
+                                  color: Colors.blueGrey.shade200,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
                               onPressed: () {
                                 setState(() => _errorMessage = null);
@@ -528,7 +614,11 @@ class _LogViewState extends State<LogView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                        const Icon(
+                          Icons.cloud_off,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           "Belum ada catatan di Cloud.",
@@ -586,122 +676,128 @@ class _LogViewState extends State<LogView> {
                               _controller.removeLog(originalIndex),
                           child: Card(
                             margin: EdgeInsets.zero,
-                            elevation: 2,
-                            shadowColor: color.withValues(alpha: 0.15),
+                            elevation: 3,
+                            shadowColor: color.withValues(alpha: 0.25),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: Colors.white,
-                              ),
-                              child: IntrinsicHeight(
+                            color: Colors.white,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(14),
+                              onTap: () =>
+                                  _showEditLogDialog(originalIndex, log),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 14,
+                                  top: 12,
+                                  bottom: 12,
+                                  right: 4,
+                                ),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      width: 5,
-                                      decoration: BoxDecoration(
-                                        color: color,
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(14),
-                                          bottomLeft: Radius.circular(14),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
                                     Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    log.title,
-                                                    style: const TextStyle(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  log.title,
+                                                  style: const TextStyle(
                                                     fontWeight: FontWeight.w600,
-                                                      fontSize: 15,
-                                                      color: Color(0xFF1A237E),
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                    fontSize: 15,
+                                                    color: Color(0xFF1A237E),
                                                   ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 3,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: color.withValues(
-                                                      alpha: 0.1,
-                                                    ),
-                                                    borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        catIcon,
-                                                        size: 11,
-                                                        color: color,
-                                                      ),
-                                                      const SizedBox(width: 3),
-                                                      Text(
-                                                        log.category,
-                                                        style: TextStyle(
-                                                          fontSize: 11,
-                                                          color: color,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              log.description,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                color: Colors.blueGrey[600],
-                                                height: 1.4,
                                               ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: color.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      catIcon,
+                                                      size: 11,
+                                                      color: color,
+                                                    ),
+                                                    const SizedBox(width: 3),
+                                                    Text(
+                                                      log.category,
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        color: color,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            log.description,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.blueGrey[600],
+                                              height: 1.4,
                                             ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              _formatDate(log.date.toString()),
-                                              style: TextStyle(
-                                                fontSize: 11,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.access_time_rounded,
+                                                size: 11,
                                                 color: Colors.blueGrey[300],
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _formatDate(
+                                                  log.date.toString(),
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.blueGrey[300],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    // Tombol edit & hapus
                                     Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
                                           icon: Icon(
                                             Icons.edit_outlined,
-                                            color: Colors.blue[700],
+                                            color: Colors.blue[600],
                                             size: 18,
                                           ),
                                           onPressed: () => _showEditLogDialog(
@@ -709,6 +805,7 @@ class _LogViewState extends State<LogView> {
                                             log,
                                           ),
                                           tooltip: "Edit",
+                                          visualDensity: VisualDensity.compact,
                                         ),
                                         IconButton(
                                           icon: Icon(
@@ -719,10 +816,10 @@ class _LogViewState extends State<LogView> {
                                           onPressed: () => _controller
                                               .removeLog(originalIndex),
                                           tooltip: "Hapus",
+                                          visualDensity: VisualDensity.compact,
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(width: 4),
                                   ],
                                 ),
                               ),
@@ -754,7 +851,6 @@ class _LogViewState extends State<LogView> {
       final now = DateTime.now();
       final diff = now.difference(dt);
 
-      // Relative time: tampilkan "X menit/jam yang lalu"
       if (diff.inSeconds < 60) {
         return "Baru saja";
       } else if (diff.inMinutes < 60) {
@@ -765,7 +861,6 @@ class _LogViewState extends State<LogView> {
         return "Kemarin, ${DateFormat('HH:mm').format(dt)}";
       }
 
-      // Format absolut untuk lebih dari 2 hari: "25 Jan 2026, 14:30"
       return DateFormat("d MMM yyyy, HH:mm", "id").format(dt);
     } catch (_) {
       return rawDate;

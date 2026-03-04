@@ -112,131 +112,167 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4FF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const SizedBox(height: 56),
-              ClipOval(
-                child: Image.asset(
-                  'assets/images/logo.jpg',
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.cover,
-                ),
+      body: Stack(
+        children: [
+          Container(
+            height: size.height * 0.48,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Selamat Datang",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1565C0),
-                  letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                "Masuk untuk melanjutkan",
-                style: TextStyle(fontSize: 14, color: Colors.blueGrey[400]),
-              ),
-              const SizedBox(height: 36),
-
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _userController,
-                      decoration: const InputDecoration(
-                        labelText: "Username",
-                        prefixIcon: Icon(Icons.person_outline_rounded),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    TextField(
-                      controller: _passController,
-                      obscureText: _isObscure,
-                      decoration: InputDecoration(
-                        labelText: "Password",
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _isLocked ? null : _handleLogin,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF1565C0),
-                          disabledBackgroundColor: Colors.grey[300],
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          _isLocked ? "Terkunci — Tunggu..." : "Masuk",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              if (_attemptCount > 0 && !_isLocked)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(3, (i) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i < _attemptCount
-                            ? Colors.red[400]
-                            : Colors.grey[300],
-                      ),
-                    );
-                  }),
-                ),
-            ],
+            ),
           ),
-        ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: size.height * 0.52,
+              color: const Color(0xFFF0F4FF),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 36),
+                  ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.jpg',
+                      width: 84,
+                      height: 84,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Selamat Datang",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Masuk untuk melanjutkan",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.75),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.09),
+                            blurRadius: 24,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Login",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1A237E),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          TextField(
+                            controller: _userController,
+                            decoration: const InputDecoration(
+                              labelText: "Username",
+                              prefixIcon: Icon(Icons.person_outline_rounded),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _passController,
+                            obscureText: _isObscure,
+                            decoration: InputDecoration(
+                              labelText: "Password",
+                              prefixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscure
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () =>
+                                    setState(() => _isObscure = !_isObscure),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              onPressed: _isLocked ? null : _handleLogin,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF1565C0),
+                                disabledBackgroundColor: Colors.grey[300],
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                _isLocked ? "Terkunci — Tunggu..." : "Masuk",
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_attemptCount > 0 && !_isLocked) ...[
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(3, (i) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: i < _attemptCount
+                                        ? Colors.red[400]
+                                        : Colors.grey[300],
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
